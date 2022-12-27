@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>header</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" href="/static/layui/css/layui.css"/>
+    <script th:src="@{/static/libs/vue.min.js}" src="/static/libs/vue.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" th:href="@{/static/css/main.css}" href="/static/css/main.css"/>
+    <style>
+        /*防止 table 出现横向滚动条*/
+        /*body {*/
+        /*    overflow-y: scroll;*/
+        /*}*/
+
+    </style>
+</head>
+<body>
+<div id="head">
+    <header th:fragment="common">
+
+        <!--  菜单  -->
+        <ul class="layui-nav layui-bg-cyan">
+            <li class="layui-nav-item" id="file"><a th:href="@{/index/file}" href="/index/file">共享文档<span class="layui-badge-dot"></span></a></li>
+            <li class="layui-nav-item" id="edit"><a th:href="@{/index/edit}" href="/index/edit">共享文件<span class="layui-badge">1</span></a></li>
+            <li class="layui-nav-item" id="info">
+                <a href="javascript:;">系统管理</a>
+                <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                    <dd><a th:href="@{/index/manage/online}" href="/index/manage/online">在线用户</a></dd>
+                    <dd><a th:href="@{/index/manage/sys}" href="/index/manage/sys">主机信息</a></dd>
+                    <dd><a th:href="@{/index/manage/info}" href="/index/manage/info">系统信息</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-layout-right right-30">
+                <a class="hand"><img th:src="@{/static/image/head.png}" class="layui-nav-img">file-share</a>
+                <dl class="layui-nav-child">
+                    <dd><a class="hand">修改信息</a></dd>
+                </dl>
+            </li>
+<!--            <li class="layui-nav-item" id="util"><a th:href="@{/index/util}" href="/index/util">实用工具</a></li>-->
+        </ul>
+
+    </header>
+
+</div>
+
+</body>
+<script th:src="@{/static/libs/jquery-3.2.1.min.js}" src="/static/libs/jquery-3.2.1.min.js" type="text/javascript"></script>
+<script th:src="@{/static/layui/layui.js}" src="/static/layui/layui.js" type="text/javascript"></script>
+<script th:src="@{/static/js/main.js}" th:inline="none" type="text/javascript"></script>
+<script th:inline="none" type="text/javascript">
+
+
+
+</script>
+</html>

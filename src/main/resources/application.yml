@@ -1,0 +1,45 @@
+server:
+  port: 30996
+  tomcat:
+    uri-encoding: UTF-8
+
+
+
+spring:
+  freemarker:
+    checkTemplateLocation: false
+  thymeleaf:
+    mode: HTML
+    cache: false
+    suffix: .html
+    encoding: UTF-8
+
+
+  mvc:
+    static-path-pattern: /static/**
+    throw-exception-if-no-handler-found: true
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    schema: classpath:db/schema.sql
+    url: jdbc:h2:file:./db/h2db
+    username: root
+    password: 123456
+    platform: h2
+    type: com.zaxxer.hikari.HikariDataSource
+
+  h2:
+    console:
+      enabled: true
+      path: /h2
+      settings:
+        web-allow-others: true
+
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
+
+file-share:
+  # 使用绝对路径
+  file-path: /usr/local/docker/file-share

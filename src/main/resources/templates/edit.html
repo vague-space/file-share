@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <link rel="stylesheet" th:href="@{/static/css/main.css}" href="/static/css/main.css"/>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" href="/static/layui/css/layui.css"/>
+    <style>
+        /*防止 table 出现横向滚动条*/
+        /*body {*/
+        /*    overflow-y: scroll;*/
+        /*    !*overflow-x: hidden;*!*/
+        /*}*/
+        .layui-table-view .layui-table {
+            width: 100% !important;
+        }
+
+        .layui-table th {
+            text-align: -webkit-center !important;
+        }
+
+        th.layui-table-patch {
+            padding: 0 !important;
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <!--  菜单  -->
+    <div th:include="header :: common"></div>
+
+    <div class="main">
+
+        <div class="self-body">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>ctrl + enter 保存 / shift + enter 刷新</legend>
+            </fieldset>
+            <textarea id="demo" style="display: none;"></textarea>
+            <div style="margin-top: 20px;text-align: center;margin-bottom: 50px">
+                <button class="layui-btn layui-btn-blue" lay-submit lay-filter="formDemo">提交</button>
+                <button class="layui-btn layui-btn-normal" onclick="popup([])">历史</button>
+            </div>
+        </div>
+
+
+    </div>
+
+</div>
+
+</body>
+<script th:src="@{/static/layui/layui.js}" src="/static/layui/layui.js" type="text/javascript"></script>
+<script th:src="@{/static/js/main.js}" th:inline="none" type="text/javascript"></script>
+
+<script type="text/javascript" th:inline="none">
+    //let layEdit = layui.layedit;
+    $(function () {
+        setActive("edit");
+
+        document.onkeydown = function (event) {
+            if (event.ctrlKey && event.keyCode === 13) {
+                //这里只能用alt，shift，ctrl等去组合其他键event.altKey、event.ctrlKey、event.shiftKey 属性
+                let content = layEdit.getContent(layBuild);
+                // 通过layedit.getContent()方法获得富文本编辑器内容
+                $.post("/file/saveEdit", {content: content}, function (e) {
+                    if (e) {
+                        layer.msg("保存成功！");
+                    }
+                });
+            }
+            if (event.shiftKey && event.keyCode === 13) {
+                $.get("/file/getEdit", function (e) {
+                    if (e.data && e.data.content) {
+                        //初始化值
+                        layEdit.setContent(layBuild, e.data.content);
+                        layer.msg("刷新成功！");
+                    }
+                });
+            }
+        };
+    })
+
+
+    function checkLeave(ev) {
+        let e = ev || window.event,
+            dialogText = '页面还未保存，确定要离开吗？';
+        // 兼容IE8和Firefox 4之前的版本
+        if (e) {
+            e.returnValue = dialogText;
+        }
+        // Chrome, Safari, Firefox 4+, Opera 12+ , IE 9+
+        return dialogText;
+    }
+
+
+    layEdit.set({
+        uploadImage: {url: '/file/img/upload', type: 'post', size: 200}
+    });
+
+    let layBuild = layEdit.build('demo', {
+        tool: [
+            'strong' //加粗
+            , 'italic' //斜体
+            , 'underline' //下划线
+            , 'del' //删除线
+            , '|' //分割线
+            , 'left' //左对齐
+            , 'center' //居中对齐
+            , 'right' //右对齐
+            , 'link' //超链接
+            , 'unlink' //清除链接
+            , 'face' //表情
+            , 'image' //插入图片
+            , 'help' //帮助
+        ],
+        height: window.screen.height >= 1080 ? 600 : 400, //设置编辑器高度
+
+    }); //建立编辑器
+
+
+    $.get("/file/getEdit", function (e) {
+        if (e.data && e.data.content) {
+            //初始化值
+            layEdit.setContent(layBuild, e.data.content);
+        }
+    });
+
+
+    form.on('submit(formDemo)', function (data) {
+        let content = layEdit.getContent(layBuild);
+        // 通过layedit.getContent()方法获得富文本编辑器内容
+        $.post("/file/saveEdit", {content: content}, function (e) {
+            if (e) {
+                layer.msg("保存成功！");
+            }
+        });
+        //alert(content)
+        //阻止表单跳转，我们使用post方法提交给servlet
+        return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+    });
+
+
+    function popup(result) {
+        layui.use('table', function () {
+
+            let table = layui.table;
+            layer.open({
+                type: 1,
+                area: ["700px", '430px'],
+                title: "历史信息",
+                maxmin: false,
+                content: '<div class="table-box"><table id="templateTable" lay-filter="templateTable"></table></div>', //先定义一个数据表格的div框
+                success: function (index, layero) {
+                    table.render({
+                        elem: '#templateTable'
+                        , height: 300
+                        , width: '100%'
+                        , url: '/file/pageEdit'
+                        , cols: [[ //设置数据表格表头
+                            {checkbox: true} //开启复选框
+                            // ,{field: 'updateTime', title: '创建时间', width: 700, hide: true}
+                            , {field: 'updateTime', title: '创建时间', width: 180}
+                            , {field: 'content', width: 180, title: '内容'}
+                            , {
+                                width: 180, title: '操作', align: 'center', templet: function (d) {//对每列数据进行处理后展示
+                                    return '<button type="button" class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit"><i class="layui-icon layui-icon-templeate-1"></i></button>' +
+                                        '<button type="button" class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del"><i class="layui-icon layui-icon-delete"></i></button>'
+                                }
+                            }
+                        ]]
+                        , page: true //使用分页
+                        , limit: 5 //默认每页多少条
+                        , parseData: function (res) { //res 自定义后台数据字段映射
+                            return {
+                                "code": res.code, //解析接口状态
+                                "msg": res.message, //解析提示文本
+                                "count": res.data.total, //解析数据长度
+                                "data": res.data.records //解析数据列表
+                            };
+                        }
+                        , done: function (res) {
+                            $('td').each(function (index, element) {
+                                $(element).attr('title', $(element).text());
+                            });
+                        }
+                    });
+                    table.on('checkbox(templateTable)', function (obj) { //监听复选框,获取选择到的值
+                        console.log(obj);
+                    })
+
+
+                    table.on('tool(templateTable)', function (obj) {//test为table标签中lay-filter的值
+                        let data = obj.data;
+                        if (obj.event === 'edit') {
+                            //询问框
+                            // layer.confirm('是否保存当前内容？', {
+                            //     btn: ['确定', '取消'] //按钮
+                            // }, function () {
+                            //     let content = layEdit.getContent(layBuild);
+                            //     // 通过layedit.getContent()方法获得富文本编辑器内容
+                            //     $.post("/file/saveEdit", {content: content}, function (e) {
+                            //         if (e) {
+                            //             console.log("保存成功！");
+                            //             layEdit.setContent(layBuild, data.content);
+                            //             layer.closeAll();
+                            //         }
+                            //     });
+                            //     return false;
+                            // }, function () {
+                            //     layEdit.setContent(layBuild, data.content);
+                            //     layer.closeAll();
+                            // });
+                            layEdit.setContent(layBuild, data.content);
+                            layer.close(layer.index);
+                        }
+                        if (obj.event === 'del') {
+                            //询问框
+                            layer.confirm('确定删除该记录么？', {
+                                btn: ['确定', '取消'] //按钮
+                            }, function () {
+                                $.get("/file/remove/" + data.id, {},
+                                    function (dat) {
+                                        layer.msg(dat.message);
+                                        table.reload('templateTable');
+                                    });
+                            }, function () {
+                                // layer.msg('也可以这样', {
+                                //     time: 20000, //20s后自动关闭
+                                //     btn: ['明白了', '知道了']
+                                // });
+                            });
+
+                        }
+                    });
+
+                },
+                btn: ['确定', '关闭'],
+                yes: function (index, layero) {
+                    layer.close(layer.index); //点击确定之后执行yes函数,关闭弹出层
+                }
+            });
+        });
+
+    }
+
+
+</script>
+
+
+</html>

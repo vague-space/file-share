@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>info</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" href="/static/layui/css/layui.css"/>
+    <link rel="stylesheet" th:href="@{/static/element/index.css}" href="/static/element/index.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}" href="/static/css/main.css"/>
+    <script th:src="@{/static/libs/vue.min.js}" src="/static/libs/vue.min.js" type="text/javascript"></script>
+
+    <style>
+
+        .self-card {
+            /*width: 40%;*/
+            /*display: inline-block;*/
+            /*text-align: center;*/
+            background-color: whitesmoke;
+
+        }
+
+        .title-bottom {
+            font-size: 24px;
+            color: #009688;
+        }
+
+        .title-top {
+            color: rgba(0, 0, 0, 0.45);
+        }
+
+
+        .pad-center {
+            text-align: center;
+        }
+
+        .title-head {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+
+        .self-panel {
+            height: 80px;
+            padding: 18px;
+        }
+
+        /*.layui-form-label {*/
+        /*    width: 100px !important;*/
+        /*    line-height: 12px !important;*/
+        /*}*/
+
+        .layui-form-item {
+            margin-bottom: 0 !important;
+            /*margin: 10px 10px 30px;*/
+        }
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <!--  菜单  -->
+    <div th:include="header :: common"></div>
+    <div>
+
+        <div class="layui-container">
+
+            <div class="layui-row layui-col-space15 top-30">
+                <div class="layui-col-md3">
+                    <div class="layui-panel self-panel">
+                        <div class="layui-row">
+                            <div class="layui-col-md4">CPU使用率</div>
+                            <div class="layui-col-md6 layui-col-md-offset2">
+                                <el-progress type="circle" :percentage="cpu.used" :width="80"></el-progress>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-panel self-panel">
+                        <div class="layui-row">
+                            <div class="layui-col-md4">内存使用率</div>
+                            <div class="layui-col-md6 layui-col-md-offset2">
+                                <el-progress type="circle" :percentage="mem.usage" :width="80"></el-progress>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-panel self-panel">
+                        <div class="layui-row">
+                            <div class="layui-col-md4">系统使用率</div>
+                            <div class="layui-col-md6 layui-col-md-offset2">
+                                <el-progress type="circle" :percentage="cpu.sys" :width="80"></el-progress>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md3">
+                    <div class="layui-panel self-panel">
+                        <div class="layui-row">
+                            <div class="layui-col-md4">JVM使用率</div>
+                            <div class="layui-col-md6 layui-col-md-offset2">
+                                <el-progress type="circle" :percentage="jvm.usage" :width="80"></el-progress>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-row layui-col-space15 top-15">
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <div class="layui-card-header title-head">内核</div>
+                        <div class="layui-card-body">
+                            <div class="layui-row">
+
+                                <div class="layui-card self-card layui-col-md5 ">
+                                    <div class="layui-card-header title-top">核心数</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{cpu.cpuNum}}个
+                                    </div>
+                                </div>
+
+                                <div class="layui-card self-card layui-col-md5 layui-col-md-offset2">
+                                    <div class="layui-card-header title-top">空闲率</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{cpu.free}}%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-row ">
+                                <div class="layui-card self-card layui-col-md5">
+                                    <div class="layui-card-header title-top">等待率</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{cpu.wait}}%
+                                    </div>
+                                </div>
+                                <div class="layui-card self-card layui-col-md5 layui-col-md-offset2">
+                                    <div class="layui-card-header title-top">使用率</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{cpu.used}}%
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="layui-col-xs6">
+                    <div class="layui-card">
+                        <div class="layui-card-header title-head">内存</div>
+                        <div class="layui-card-body">
+                            <div class="layui-row">
+
+                                <div class="layui-card self-card layui-col-md5 ">
+                                    <div class="layui-card-header title-top">大小</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{mem.total}}GB
+                                    </div>
+                                </div>
+
+                                <div class="layui-card self-card layui-col-md5 layui-col-md-offset2">
+                                    <div class="layui-card-header title-top">空闲</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{mem.free}}GB
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-row ">
+                                <div class="layui-card self-card layui-col-md5">
+                                    <div class="layui-card-header title-top">已使用</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{mem.used}}GB
+                                    </div>
+                                </div>
+                                <div class="layui-card self-card layui-col-md5 layui-col-md-offset2">
+                                    <div class="layui-card-header title-top">使用率</div>
+                                    <div class="layui-card-body title-bottom">
+                                        {{mem.usage}}%
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="layui-row top-30">
+                <table id="demo" lay-filter="test"></table>
+            </div>
+            <div style="margin-bottom: 60px">
+
+            </div>
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+</div>
+
+</body>
+<script th:src="@{/static/layui/layui.js}" src="/static/layui/layui.js" type="text/javascript"></script>
+<script th:src="@{/static/element/index.js}" src="/static/element/index.js"></script>
+<script th:src="@{/static/js/main.js}" th:inline="none" type="text/javascript"></script>
+
+<script type="text/html" th:inline="none" id="toolbarDemo">
+
+</script>
+<script th:inline="none" type="text/javascript">
+
+    new Vue({
+        el: '#app',
+        data: {
+            cpu: {
+                cpuNum: 0,
+                free: '0.00',
+                wait: '0.00',
+                used: '0.00',
+                sys: '0.00'
+            },
+            mem: {
+                total: 0,
+                free: 0,
+                used: 0,
+                usage: '0.00'
+            },
+            jvm: {
+                usage: '0.00'
+            },
+            sys:{
+                computerName: '',
+                computerIp: '',
+                osName: '',
+                osArch: ''
+            },
+            timer: null,
+            progressTimer:null,
+            checkedState: false
+        },
+        methods: {
+            initTable() {
+                let element = layui.element;
+                let form = layui.form;
+                const that = this;
+                let index = layer.load(2);
+                //第一个实例
+                let tableIndex = table.render({
+                    elem: '#demo'
+                    // ,height: 312
+                    , url: '/server/info' //数据接口
+                    , cols: [[ //表头
+                        {field: 'typeName', title: '磁盘', width: 200}
+                        , {
+                            field: 'usage', title: '使用率', templet: function (d) {
+                                if (d && d.usage && d.usage < 30) {
+                                    return '<div class="layui-progress top-11  layui-progress-big " lay-showPercent="yes">\n' +
+                                        '  <div class="layui-progress-bar" lay-percent="' + d.usage + "%" + '"></div>\n' +
+                                        '</div>'
+                                }
+                                if (d && d.usage && d.usage < 50) {
+                                    return '<div class="layui-progress top-11  layui-progress-big " lay-showPercent="yes">\n' +
+                                        '  <div class="layui-progress-bar layui-bg-blue" lay-percent="' + d.usage + "%" + '"></div>\n' +
+                                        '</div>'
+                                }
+                                if (d && d.usage && d.usage < 70) {
+                                    return '<div class="layui-progress top-11  layui-progress-big " lay-showPercent="yes">\n' +
+                                        '  <div class="layui-progress-bar layui-bg-red" lay-percent="' + d.usage + "%" + '"></div>\n' +
+                                        '</div>'
+                                }
+                                return '<div class="layui-progress top-11  layui-progress-big " lay-showPercent="yes">\n' +
+                                    '  <div class="layui-progress-bar layui-bg-red" lay-percent="' + d.usage + "%" + '"></div>\n' +
+                                    '</div>'
+                            }
+                        }
+                        , {field: 'dirName', title: '路径'}
+                        , {field: 'used', title: '使用', sort: true}
+                        , {field: 'free', title: '剩余', sort: true}
+                        , {field: 'total', title: '大小', sort: true}
+                    ]]
+                    , skin: 'nob ' //行边框风格
+                    , size: 'lg' //小尺寸的表格
+                    // , toolbar: true //开启头部工具栏，并为其绑定左侧模板
+                    , toolbar: '#toolbarDemo'
+                    , defaultToolbar: ['filter', 'exports', 'print']
+                    , title: '内核信息表'
+                    , done: function (d) {
+                        element.render()
+                        layer.close(index);    //返回数据关闭loading
+                    }
+                    , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                        if (res && res.data) {
+                            that.parseRes(res.data)
+                        }
+
+                        return {
+                            "code": res.code, //解析接口状态
+                            "msg": res.message, //解析提示文本
+                            "count": res.count, //解析数据长度
+                            "data": res.data.disk //解析数据列表
+                        };
+                    }
+                });
+
+
+                //监听指定开关
+                form.on('switch(switchTest)', function (data) {
+                    that.checkedState = !that.checkedState;
+                    that.resetTimer(tableIndex);
+                });
+
+
+            },
+            loadProgress() {
+
+            },
+            resetTimer(tableIndex) {
+                const that = this;
+                let element = layui.element;
+                if (this.checkedState) {
+                    if (this.timer !== null) {
+                        clearInterval(this.timer);
+                    }
+                    // if (this.progressTimer !== null) {
+                    //     clearInterval(this.progressTimer);
+                    //     element.progress('progress-demo', 0 + '%');
+                    // }
+                    //that.loadProgress();
+                    this.timer = setInterval(function () {
+                        tableIndex.reload();
+                        //that.loadProgress();
+                    }, 1000 * 10);
+
+                    layer.msg("已启用自动刷新，刷新间隔10s");
+                } else {
+                    if (this.timer) {
+                        //调用方法，关闭指定的定时器
+                        clearInterval(this.timer);
+                        layer.msg("已关闭自动刷新");
+                    }
+                    // if (this.progressTimer !== null) {
+                    //     clearInterval(this.progressTimer);
+                    //     element.progress('progress-demo', 0 + '%');
+                    // }
+                }
+            },
+            parseRes(res) {
+                if (res) {
+                    if (res.cpu) {
+                        this.cpu = res.cpu
+                    }
+                    if (res.mem) {
+                        this.mem = res.mem
+                    }
+                    if (res.jvm) {
+                        this.jvm = res.jvm
+                    }
+                    if (res.sys) {
+                        this.sys = res.sys
+                    }
+                }
+            }
+        },
+        mounted() {
+            setActive("info");
+            this.initTable();
+        }
+    })
+
+</script>
+</html>

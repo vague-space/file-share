@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" href="/static/layui/css/layui.css"/>
+    <link rel="stylesheet" th:href="@{/static/element/index.css}" href="/static/element/index.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}" href="/static/css/main.css"/>
+    <style>
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <!--  菜单  -->
+    <div th:include="header :: common"></div>
+
+    <div class="self-body">
+        <div class="layui-card">
+            <div class="layui-card-header"
+                 style="height: 50px !important;padding-top: 10px !important;background-color: #f5f5f5">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <div class="layui-input-inline" style="width: 180px;">
+                            <input type="text" name="price_min" placeholder="请输入文件名" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-btn-group">
+                            <button type="button" class="layui-btn layui-btn-xs layui-primary" onclick="history.go(0)">
+                                <i class="layui-icon layui-icon-search"></i>搜索
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-xs layui-btn" onclick="history.go(0)"><i
+                                    class="layui-icon layui-icon-top"></i>根目录
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-xs layui-btn" onclick="backFolder(-1)"><i
+                                    class="layui-icon layui-icon-return"></i>上一级
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-xs layui-btn" onclick="history.go(0)"><i
+                                    class="layui-icon layui-icon-refresh"></i>刷新
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <div class="layui-inline" style="float: right">
+                        <button class="layui-btn layui-btn-primary" id="demo4">
+                            工具
+                            <i class="layui-icon layui-icon-more-vertical layui-font-12"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="layui-card-body" style="min-height: 300px">
+                <blockquote class="layui-elem-quote">
+                    <span class="layui-breadcrumb" lay-separator="/" lay-filter="bread" id="menuRoot">
+                              <a href="">home</a>
+                        <!--                              <a href="">img</a>-->
+                        <!--                              <a href="">test</a>-->
+                        <!--                              <a><cite>qq.png</cite></a>-->
+                            </span>
+                </blockquote>
+
+                <div>
+                    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                        <legend>拖拽上传</legend>
+                    </fieldset>
+
+                    <div style="width: 100%;text-align:center;">
+                        <div class="layui-upload-drag" id="upload" style="width: 80%">
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将文件拖拽到此处</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--   文件列表     -->
+            <div>
+
+                <table class="layui-hide" id="fileTable" lay-filter="test"></table>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+<script th:src="@{/static/layui/layui.js}" src="/static/layui/layui.js" type="text/javascript"></script>
+<script th:src="@{/static/js/main.js}" th:inline="none" type="text/javascript"></script>
+
+<!--操作-->
+<script type="text/html" th:inline="none" id="barDemo">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">预览</a>
+    <!--    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>-->
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!--<script type="text/javascript">-->
+<!--    const folderPath = [[${folderPath}]];-->
+<!--</script>-->
+<script type="text/javascript" th:inline="none">
+
+    $(function () {
+        setActive("file");
+    })
+
+    let folderPath = '';
+
+    //拖拽上传
+    upload.render({
+        elem: '#upload'
+        , accept: 'file' //普通文件
+        , choose: obj => {
+            // 清空历史上传文件，解决choose只执行一次的问题！！！
+            //upload.config.elem.next()[0].value = '';
+        }
+        , url: '/file/upload'
+        , done: function (res) {
+            flush()
+            layer.closeAll('loading');
+            //关闭loading
+            return layer.msg('上传成功');
+        },
+        before: function () {
+            this.data = {
+                "path": folderPath
+            }
+            layer.load(); //上传loading
+        },
+        error: function (e) {
+            console.log(e)
+            layer.closeAll('loading'); //关闭loading
+            return layer.msg('上传失败');
+        }
+
+    });
+
+
+    const tableIndex = table.render({
+        elem: '#fileTable'
+        , url: '/file/searchFolder'
+        , cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+        , where: {
+            "folderPath": folderPath
+        }
+        , cols: [[
+            {
+                title: '', fixed: 'left', width: '5%', align: 'center', templet: function (d) {
+                    let html = '';
+                    if (d.type === 1) {
+                        html += '<span class="layui-badge-dot layui-bg-green"></span>';
+                    } else if (d.type === 2) {
+                        html += '<span class="layui-badge-dot layui-bg-blue"></span>';
+                    }
+                    return html;
+                }, unresize: true
+            },
+            {
+                field: 'fileName', width: '25%', title: '文件名', templet: function (d) {
+                    if (d.type === 1) {
+                        //href="javascript:void(0);;return false;"
+                        return '<a href="javascript:void(0)" onclick="enterFolder(' + JSON.stringify(d).replace(/\"/g, "'") + ')" style="color: #1E9FFF">' + d.fileName + '</a>'
+                    }
+                    return d.fileName
+                }
+            },
+            {field: 'createTime', width: '20%', title: '创建日期'},
+            {field: 'fileSize', width: '15%', title: '大小'},
+            {field: 'createName', width: '15%', title: '创建者'},
+            {
+                width: '20%', title: '操作', align: 'left', templet: function (d) {//对每列数据进行处理后展示
+                    if (d.type === 1) {
+                        return '<button type="button" class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del"><i class="layui-icon layui-icon-delete"></i></button>'
+                    } else {
+                        return '<button type="button" class="layui-btn layui-btn-xs layui-btn-primary" lay-event="download"><i class="layui-icon layui-icon-download-circle"></i></button>' +
+                            '<button type="button" class="layui-btn layui-btn-xs" lay-event="detail"><i class="layui-icon layui-icon-play"></i></button>' +
+                            '<button type="button" class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del"><i class="layui-icon layui-icon-delete"></i></button>'
+                    }
+                }
+            },
+            // {width: '20%', title: '操作', align: 'center', toolbar: '#barDemo'}
+        ]],
+        // response: {
+        //     statusCode: 200 //重新规定成功的状态码为 200，table 组件默认为 0
+        // }
+    });
+
+
+    table.on('tool(test)', function (obj) {//test为table标签中lay-filter的值
+
+        let data = obj.data;
+
+        data.filePath = data.filePath.replace(/\//g, "\\")
+        console.log(data.filePath)
+
+
+        if (obj.event === 'del') {
+            //询问框
+            layer.confirm('是否删除当前文件或文件夹？', {
+                title: "删除提示",
+                icon: 2,
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                removeFile(data)
+                return false;
+            }, function () {
+                layer.closeAll();
+            });
+
+        } else if (obj.event === 'detail') {
+            if (data.fileName.indexOf(".pdf") !== -1) {
+                viewFile(data)
+            } else if (data.fileName.indexOf(".jpg") !== -1 || data.fileName.indexOf(".png") !== -1) {
+                layer.photos({
+                    photos: {"data": [{"src": "/file/view?filePath=" + data.filePath + "\\" + data.fileName}]},
+                    closeBtn: true
+                });
+            } else if (data.fileName.indexOf(".txt") !== -1) {
+                //弹出即全屏
+                let index = layer.open({
+                    type: 2,
+                    content: "/file/view?filePath=" + data.filePath + "\\" + data.fileName,
+                    area: ['800px', '600px'],
+                    shade: 0.6,
+                    maxmin: true,
+                    scrollbar: false,
+                    title: '文本预览',
+                });
+                //layer.full(index);
+            }
+
+        } else if (obj.event === 'download') {
+            downloadByUrl({
+                url: "/file/view?filePath=" + data.filePath + "\\" + data.fileName,
+                target: '_self',
+                fileName: data.fileName
+            });
+        }
+    });
+
+
+    //自定义事件 - hover
+    dropdown.render({
+        elem: '#demo4'
+        , trigger: 'hover'
+        , data: [{
+            title: '上传文件'
+            , id: 100
+        }, {
+            title: '上传文件夹'
+            , id: 101
+        }, {
+            title: '新建文件夹'
+            , id: 102
+        },
+            {
+                title: '复制'
+                , id: 103
+            },
+            {
+                title: '剪切'
+                , id: 104
+            },
+            {
+                title: '删除'
+                , id: 105
+            }],
+        //菜单被点击的事件
+        click: function (obj) {
+            console.log(obj);
+            //prompt层
+            if (obj.id === 102) {
+                layer.prompt({title: '请输入新建的文件夹名称', formType: 3}, function (text, index) {
+                    layer.close(index);
+                    //text
+                    createDirectory(text)
+                });
+            }
+
+        }
+    });
+
+
+    function createDirectory(name) {
+        $.get("/file/createDirectory", {'directoryName': name, "filePath": folderPath},
+            function (dat) {
+                layer.msg(dat.message);
+                flush()
+            });
+    }
+
+
+    function removeFile(file) {
+        $.ajax({
+            type: "post",
+            url: "/file/removeFile",
+            contentType: "application/json",
+            data: JSON.stringify(file),
+            dataType: "json",
+            success: function (data) {
+                layer.msg(data.message);
+                flush()
+            },
+            error: function (msg) {
+                console.log(msg)
+            }
+        })
+    }
+
+    function viewFile(data) {
+        window.open("/static/js/web/viewer.html?file=/file/view?filePath=" + data.filePath + "\\" + data.fileName);
+    }
+
+    let elem = layui.element;
+
+    // $("#menuRoot").append('<a href="">home</a>');
+    // elem.render('breadcrumb','bread');
+
+    let strArr = ['home'];
+
+    function enterFolder(data) {
+        console.log(data)
+        resetBreadcrumb(data)
+        folderPath = data.filePath + "\\" + data.fileName;
+        table.reload('fileTable', {
+            where: {
+                "folderPath": folderPath
+            }
+        });
+    }
+
+
+    function resetBreadcrumb(data) {
+        if (data && data.fileName) {
+            $("#menuRoot").empty()
+            strArr.push(data.fileName)
+            strArr.forEach((item, index, array) => {
+                //执行代码
+                $("#menuRoot").append('<a href="">' + item + '</a>');
+            })
+            elem.render('breadcrumb', 'bread');
+        }
+    }
+
+
+    function reduceBreadcrumb(fileName) {
+        if (fileName) {
+            $("#menuRoot").empty()
+            const num = strArr.indexOf(fileName)
+            if (num > 0 && num === strArr.length - 1) {
+                strArr.pop()
+            }
+            strArr.forEach((item, index, array) => {
+                //执行代码
+                $("#menuRoot").append('<a href="">' + item + '</a>');
+            })
+            elem.render('breadcrumb', 'bread');
+        }
+    }
+
+    function flush() {
+        history.go(0)
+    }
+
+    function backFolder(num) {
+        if (num === -1) {
+            //上一级
+            if (folderPath) {
+                let path = folderPath.replace('/', '\\');
+                if (path.endsWith("\\file\\")) {
+                    layer.msg("已到根目录")
+                    return
+                }
+                if (path.endsWith("\\")) {
+                    path = path.substr(0, path.lastIndexOf("\\"));
+                }
+                let lastPath = path.substr(0, path.lastIndexOf("\\"));
+                reduceBreadcrumb(path.substr(path.lastIndexOf("\\") + 1, path.length))
+                const file = {
+                    "filePath": lastPath,
+                    "fileName": ''
+                }
+                this.enterFolder(file)
+            } else {
+                history.go(0)
+            }
+        }
+    }
+
+</script>
+
+
+</html>
